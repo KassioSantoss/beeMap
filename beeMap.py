@@ -133,14 +133,14 @@ class BeeMapWidget(FloatLayout):
                     dist = math.hypot(point1.x - point2.x, point1.y - point2.y)
                     if dist < 80 + (50 / max(0.5, self.map_scatter.scale)):
                         Line(points=[point1.x, point1.y, point2.x, point2.y], width=1)
-            # Círculos de área de influência (visível no zoom alto)
+     
             if self.map_scatter.scale > 1.5:
                 Color(0.15, 0.2, 0.3, 0.2)
                 for point in self.points:
                     if point.potential_index > 75:
                         influence_radius = 60 + point.potential_index * 0.5
                         Line(circle=(point.x, point.y, influence_radius), width=2)
-            # Pontos dos apiários
+
             for point in self.points:
                 base_size = max(8, point.size * max(0.8, self.map_scatter.scale * 0.7))
                 Color(0, 0, 0, 0.22)

@@ -7,7 +7,6 @@
             pos: self.pos
             size: self.size
 
-    # Header centralizado
     BoxLayout:
         orientation: 'vertical'
         size_hint: 1, None
@@ -52,7 +51,6 @@
         Widget:
             size_hint_y: 0.2
 
-    # Área do mapa principal
     MapScatter:
         id: map_scatter
         pos_hint: {'center_x': 0.5, 'center_y': 0.45}
@@ -63,7 +61,6 @@
             id: canvas_area
             size: 1200, 800
 
-    # Controles de zoom - lado direito
     BoxLayout:
         orientation: 'vertical'
         size_hint: None, None

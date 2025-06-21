@@ -1,4 +1,3 @@
-# BeeMap - Interface Moderna com Zoom e Pan (Otimiz. p/11 pontos)
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
@@ -7,7 +6,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.scatter import Scatter
-from kivy.properties import ObjectProperty, ListProperty, NumericProperty
+from kivy.properties import ListProperty, NumericProperty
 from kivy.graphics import Color, Ellipse, Line, Rectangle, RoundedRectangle
 from kivy.animation import Animation
 from kivy.clock import Clock
@@ -15,13 +14,39 @@ import random
 import math
 
 OWNERS = [
-    "José Silva", "Maria Oliveira", "Francisco Lima", "Ana Sousa", "Pedro Costa",
-    "Carlos Santos", "Fernanda Rocha", "João Pereira", "Isabel Martins", "Roberto Alves", "Beatriz Nunes"
+    "José Silva",
+    "Maria Oliveira",
+    "Francisco Lima",
+    "Ana Sousa",
+    "Pedro Costa",
+    "Carlos Santos",
+    "Fernanda Rocha",
+    "João Pereira",
+    "Isabel Martins",
+    "Roberto Alves",
+    "Beatriz Nunes",
 ]
-SOILS = ["Latossolo Amarelo", "Argissolo Vermelho", "Cambissolo", "Neossolo", "Gleissolo", "Vertissolo"]
+SOILS = [
+    "Latossolo Amarelo",
+    "Argissolo Vermelho",
+    "Cambissolo",
+    "Neossolo",
+    "Gleissolo",
+    "Vertissolo",
+]
 FLORA = [
-    "Marmeleiro", "Aroeira", "Jurema-Preta", "Angico", "Jatobá", "Ipê", "Mandacaru",
-    "Caatinga", "Umbuzeiro", "Cajueiro", "Eucalipto", "Girassol"
+    "Marmeleiro",
+    "Aroeira",
+    "Jurema-Preta",
+    "Angico",
+    "Jatobá",
+    "Ipê",
+    "Mandacaru",
+    "Caatinga",
+    "Umbuzeiro",
+    "Cajueiro",
+    "Eucalipto",
+    "Girassol",
 ]
 
 class ApiaryPoint:
@@ -82,10 +107,8 @@ class MapScatter(Scatter):
         elif self.y < -900:
             self.y = -900
 
-class BeeMapWidget(FloatLayout):
-    map_scatter = ObjectProperty(None)
-    canvas_widget = ObjectProperty(None)
-    user_loc = ListProperty([600, 400]) 
+class BeeMapWidget(BoxLayout):
+    user_loc = ListProperty([600, 400])
     points = ListProperty([])
     pulse_time = NumericProperty(0)
     zoom_level = NumericProperty(1.0)
@@ -106,22 +129,24 @@ class BeeMapWidget(FloatLayout):
                     break
             self.points.append(ApiaryPoint(x, y, self.user_loc, owner))
         self.draw_map()
-        Clock.schedule_interval(self.update_pulse, 1/30.0)
+        Clock.schedule_interval(self.update_pulse, 1 / 30.0)
 
     def update_pulse(self, dt):
         self.pulse_time += dt * 2
         self.draw_map()
 
     def draw_map(self):
-        self.canvas_widget.canvas.clear()
-        with self.canvas_widget.canvas:
+        map_scatter = self.ids.map_scatter
+        canvas_area = self.ids.canvas_area
+        canvas_area.canvas.clear()
+        with canvas_area.canvas:
             Color(0.03, 0.04, 0.08, 1)
             Rectangle(pos=(0, 0), size=(1200, 800))
             Color(0.2, 0.6, 1, 1)
             Line(rectangle=(0, 0, 1200, 800), width=6)
             Color(0.15, 0.23, 0.44, 0.8)
             Line(rectangle=(2, 2, 1196, 796), width=2)
-            grid_spacing = int(60 / max(0.5, self.map_scatter.scale))
+            grid_spacing = int(60 / max(0.5, map_scatter.scale))
             Color(0.08, 0.1, 0.15, 0.4)
             for i in range(0, 1200, grid_spacing):
                 Line(points=[i, 0, i, 800], width=0.5)
@@ -129,77 +154,113 @@ class BeeMapWidget(FloatLayout):
                 Line(points=[0, i, 1200, i], width=0.5)
             Color(0.1, 0.15, 0.25, 0.3)
             for i, point1 in enumerate(self.points):
-                for point2 in self.points[i+1:]:
+                for point2 in self.points[i + 1 :]:
                     dist = math.hypot(point1.x - point2.x, point1.y - point2.y)
-                    if dist < 80 + (50 / max(0.5, self.map_scatter.scale)):
+                    if dist < 80 + (50 / max(0.5, map_scatter.scale)):
                         Line(points=[point1.x, point1.y, point2.x, point2.y], width=1)
-     
-            if self.map_scatter.scale > 1.5:
+            if map_scatter.scale > 1.5:
                 Color(0.15, 0.2, 0.3, 0.2)
                 for point in self.points:
                     if point.potential_index > 75:
                         influence_radius = 60 + point.potential_index * 0.5
                         Line(circle=(point.x, point.y, influence_radius), width=2)
-
             for point in self.points:
-                base_size = max(8, point.size * max(0.8, self.map_scatter.scale * 0.7))
+                base_size = max(8, point.size * max(0.8, map_scatter.scale * 0.7))
                 Color(0, 0, 0, 0.22)
-                Ellipse(pos=(point.x - base_size/2 - 2, point.y - base_size/2 - 2), size=(base_size+4, base_size+4))
+                Ellipse(
+                    pos=(point.x - base_size / 2 - 2, point.y - base_size / 2 - 2),
+                    size=(base_size + 4, base_size + 4),
+                )
                 Color(*point.color)
-                Ellipse(pos=(point.x - base_size/2, point.y - base_size/2), size=(base_size, base_size))
-                border_color = [min(1, c * 1.12 + 0.18) for c in point.color[:3]] + [1.0]
+                Ellipse(
+                    pos=(point.x - base_size / 2, point.y - base_size / 2),
+                    size=(base_size, base_size),
+                )
+                border_color = [min(1, c * 1.12 + 0.18) for c in point.color[:3]] + [
+                    1.0
+                ]
                 Color(*border_color)
-                Line(circle=(point.x, point.y, base_size/2), width=3)
-                if self.map_scatter.scale > 1.0:
+                Line(circle=(point.x, point.y, base_size / 2), width=3)
+                if map_scatter.scale > 1.0:
                     productivity_ring_size = base_size + 6
                     productivity_alpha = (point.honey_production / 100) * 0.54
                     prod_ring_col = [0.85, 0.73, 0.24, productivity_alpha]
                     Color(*prod_ring_col)
-                    Line(circle=(point.x, point.y, productivity_ring_size/2), width=2)
-                if self.map_scatter.scale > 0.8:
+                    Line(circle=(point.x, point.y, productivity_ring_size / 2), width=2)
+                if map_scatter.scale > 0.8:
                     center_alpha = 0.7 - (point.distance / 60.0) * 0.36
                     Color(1, 1, 1, center_alpha)
                     center_size = max(3, base_size * 0.3)
-                    Ellipse(pos=(point.x - center_size/2, point.y - center_size/2), size=(center_size, center_size))
+                    Ellipse(
+                        pos=(point.x - center_size / 2, point.y - center_size / 2),
+                        size=(center_size, center_size),
+                    )
             # Ponto do usuário com animação
-            user_pulse = (20 + 8 * math.sin(self.pulse_time * 1.5)) * max(0.8, self.map_scatter.scale)
+            user_pulse = (20 + 8 * math.sin(self.pulse_time * 1.5)) * max(
+                0.8, map_scatter.scale
+            )
             Color(0, 0, 0, 0.26)
-            Ellipse(pos=(self.user_loc[0] - user_pulse/2 - 2, self.user_loc[1] - user_pulse/2 - 2), size=(user_pulse+4, user_pulse+4))
+            Ellipse(
+                pos=(
+                    self.user_loc[0] - user_pulse / 2 - 2,
+                    self.user_loc[1] - user_pulse / 2 - 2,
+                ),
+                size=(user_pulse + 4, user_pulse + 4),
+            )
             Color(0.14, 1, 0.53, 0.36)
-            Ellipse(pos=(self.user_loc[0] - user_pulse/2, self.user_loc[1] - user_pulse/2), size=(user_pulse, user_pulse))
+            Ellipse(
+                pos=(
+                    self.user_loc[0] - user_pulse / 2,
+                    self.user_loc[1] - user_pulse / 2,
+                ),
+                size=(user_pulse, user_pulse),
+            )
             Color(0.18, 1, 0.6, 0.92)
-            user_size = 16 * max(0.8, self.map_scatter.scale)
+            user_size = 16 * max(0.8, map_scatter.scale)
             Line(circle=(self.user_loc[0], self.user_loc[1], user_size), width=4)
             Color(0.13, 0.8, 0.4, 1)
-            center_size = 12 * max(0.8, self.map_scatter.scale)
-            Ellipse(pos=(self.user_loc[0] - center_size/2, self.user_loc[1] - center_size/2), size=(center_size, center_size))
+            center_size = 12 * max(0.8, map_scatter.scale)
+            Ellipse(
+                pos=(
+                    self.user_loc[0] - center_size / 2,
+                    self.user_loc[1] - center_size / 2,
+                ),
+                size=(center_size, center_size),
+            )
 
     def on_map_transform(self, instance, value):
-        self.zoom_level = self.map_scatter.scale
+        self.zoom_level = self.ids.map_scatter.scale
         self.draw_map()
 
     def zoom_in(self):
-        if self.map_scatter.scale < 4.0:
-            anim = Animation(scale=min(4.0, self.map_scatter.scale * 1.4), duration=0.3)
-            anim.start(self.map_scatter)
+        scatter = self.ids.map_scatter
+        if scatter.scale < 4.0:
+            anim = Animation(scale=min(4.0, scatter.scale * 1.4), duration=0.3)
+            anim.start(scatter)
             Clock.schedule_once(lambda dt: self.draw_map(), 0.35)
 
     def zoom_out(self):
-        if self.map_scatter.scale > 0.5:
-            anim = Animation(scale=max(0.5, self.map_scatter.scale * 0.75), duration=0.3)
-            anim.start(self.map_scatter)
+        scatter = self.ids.map_scatter
+        if scatter.scale > 0.5:
+            anim = Animation(
+                scale=max(0.5, scatter.scale * 0.75), duration=0.3
+            )
+            anim.start(scatter)
             Clock.schedule_once(lambda dt: self.draw_map(), 0.35)
 
     def center_map(self):
-        center_x = -self.user_loc[0] * self.map_scatter.scale + 450
-        center_y = -self.user_loc[1] * self.map_scatter.scale + 300
+        scatter = self.ids.map_scatter
+        center_x = -self.user_loc[0] * scatter.scale + 450
+        center_y = -self.user_loc[1] * scatter.scale + 300
         anim = Animation(x=center_x, y=center_y, duration=0.5)
-        anim.start(self.map_scatter)
+        anim.start(scatter)
 
     def on_touch_down(self, touch):
-        if self.canvas_widget.collide_point(*touch.pos):
-            local_x = (touch.x - self.map_scatter.x) / self.map_scatter.scale
-            local_y = (touch.y - self.map_scatter.y) / self.map_scatter.scale
+        # Só deixa clicar nos pontos no canvas_area
+        if self.ids.canvas_area.collide_point(*touch.pos):
+            scatter = self.ids.map_scatter
+            local_x = (touch.x - scatter.x) / scatter.scale
+            local_y = (touch.y - scatter.y) / scatter.scale
             for point in self.points:
                 dist = math.hypot(point.x - local_x, point.y - local_y)
                 if dist < point.size + 10:
@@ -227,23 +288,42 @@ class ModernPopup(Popup):
         self.opacity = 0
         anim = Animation(opacity=1, duration=0.3)
         anim.start(self)
-
     def create_content(self, layout):
         with layout.canvas.before:
             Color(0.06, 0.08, 0.12, 0.96)
-            self.bg_rect = RoundedRectangle(pos=layout.pos, size=layout.size, radius=[25])
+            self.bg_rect = RoundedRectangle(
+                pos=layout.pos, size=layout.size, radius=[25]
+            )
             Color(0.2, 0.7, 1, 0.9)
-            Line(rounded_rectangle=(layout.pos[0], layout.pos[1], layout.size[0], layout.size[1], 25), width=3)
+            Line(
+                rounded_rectangle=(
+                    layout.pos[0],
+                    layout.pos[1],
+                    layout.size[0],
+                    layout.size[1],
+                    25,
+                ),
+                width=3,
+            )
             Color(0.4, 0.8, 1, 0.5)
-            Line(rounded_rectangle=(layout.pos[0]+2, layout.pos[1]+2, layout.size[0]-4, layout.size[1]-4, 23), width=1)
+            Line(
+                rounded_rectangle=(
+                    layout.pos[0] + 2,
+                    layout.pos[1] + 2,
+                    layout.size[0] - 4,
+                    layout.size[1] - 4,
+                    23,
+                ),
+                width=1,
+            )
         layout.bind(pos=self.update_bg, size=self.update_bg)
         title = Label(
             text="📍 DETALHES DO APIÁRIO",
             font_size=26,
             bold=True,
             color=[0.2, 0.8, 1, 1],
-            pos_hint={'center_x': 0.5, 'top': 0.95},
-            size_hint=(1, 0.08)
+            pos_hint={"center_x": 0.5, "top": 0.95},
+            size_hint=(1, 0.08),
         )
         layout.add_widget(title)
         info_y = 0.82
@@ -252,8 +332,16 @@ class ModernPopup(Popup):
             ("👤 PROPRIETÁRIO", self.point.owner, [1, 1, 1, 1]),
             ("📍 DISTÂNCIA", f"{self.point.distance:.1f} km", [0.3, 0.9, 1, 1]),
             ("🌱 TIPO DE SOLO", self.point.soil, [0.6, 1, 0.4, 1]),
-            ("🏺 COLMEIAS ATIVAS", f"{self.point.hives_count} unidades", [1, 0.8, 0.3, 1]),
-            ("🍯 PRODUÇÃO ANUAL", f"{self.point.honey_production} kg/ano", [1, 0.7, 0.2, 1]),
+            (
+                "🏺 COLMEIAS ATIVAS",
+                f"{self.point.hives_count} unidades",
+                [1, 0.8, 0.3, 1],
+            ),
+            (
+                "🍯 PRODUÇÃO ANUAL",
+                f"{self.point.honey_production} kg/ano",
+                [1, 0.7, 0.2, 1],
+            ),
             ("🌿 FLORA PRINCIPAL", ", ".join(self.point.main_flora), [1, 0.7, 0.9, 1]),
         ]
         for label_text, value_text, color in info_data:
@@ -261,10 +349,10 @@ class ModernPopup(Popup):
             info_y -= spacing
         self.add_potential_bar(layout, info_y - 0.02)
         button_layout = BoxLayout(
-            orientation='horizontal',
+            orientation="horizontal",
             spacing=15,
-            pos_hint={'center_x': 0.5, 'y': 0.05},
-            size_hint=(0.9, 0.12)
+            pos_hint={"center_x": 0.5, "y": 0.05},
+            size_hint=(0.9, 0.12),
         )
         route_btn = ModernButton(
             text="🗺️ VER ROTA",
@@ -272,7 +360,7 @@ class ModernPopup(Popup):
             bold=True,
             background_normal="",
             background_color=[0.2, 0.6, 0.9, 1],
-            color=[1, 1, 1, 1]
+            color=[1, 1, 1, 1],
         )
         close_btn = ModernButton(
             text="❌ FECHAR",
@@ -280,18 +368,15 @@ class ModernPopup(Popup):
             bold=True,
             background_normal="",
             background_color=[0.6, 0.2, 0.3, 1],
-            color=[1, 1, 1, 1]
+            color=[1, 1, 1, 1],
         )
         close_btn.bind(on_release=self.dismiss)
         button_layout.add_widget(route_btn)
         button_layout.add_widget(close_btn)
         layout.add_widget(button_layout)
-
     def add_info_item(self, layout, label_text, value_text, color, y_pos):
         item_bg = Label(
-            text="",
-            pos_hint={'x': 0.05, 'center_y': y_pos},
-            size_hint=(0.9, 0.07)
+            text="", pos_hint={"x": 0.05, "center_y": y_pos}, size_hint=(0.9, 0.07)
         )
         with item_bg.canvas.before:
             Color(0.1, 0.12, 0.18, 0.5)
@@ -302,49 +387,50 @@ class ModernPopup(Popup):
             font_size=13,
             bold=True,
             color=[0.7, 0.8, 0.9, 1],
-            pos_hint={'x': 0.08, 'center_y': y_pos},
+            pos_hint={"x": 0.08, "center_y": y_pos},
             size_hint=(0.35, 0.06),
-            halign='left'
+            halign="left",
         )
-        label.bind(size=label.setter('text_size'))
+        label.bind(size=label.setter("text_size"))
         layout.add_widget(label)
         value = Label(
             text=value_text,
             font_size=14,
             bold=True,
             color=color,
-            pos_hint={'x': 0.45, 'center_y': y_pos},
+            pos_hint={"x": 0.45, "center_y": y_pos},
             size_hint=(0.48, 0.06),
-            halign='left'
+            halign="left",
         )
-        value.bind(size=value.setter('text_size'))
+        value.bind(size=value.setter("text_size"))
         layout.add_widget(value)
-
     def add_potential_bar(self, layout, y_pos):
         pot_label = Label(
             text="⚡ POTENCIAL APÍCOLA",
             font_size=14,
             bold=True,
             color=[0.7, 0.8, 0.9, 1],
-            pos_hint={'x': 0.08, 'center_y': y_pos + 0.04},
+            pos_hint={"x": 0.08, "center_y": y_pos + 0.04},
             size_hint=(0.4, 0.05),
-            halign='left'
+            halign="left",
         )
-        pot_label.bind(size=pot_label.setter('text_size'))
+        pot_label.bind(size=pot_label.setter("text_size"))
         layout.add_widget(pot_label)
         pot_value = Label(
             text=f"{self.point.potential_index}%",
             font_size=18,
             bold=True,
-            color=[0.3, 1, 0.5, 1] if self.point.potential_index > 70 else [1, 0.8, 0.3, 1],
-            pos_hint={'x': 0.75, 'center_y': y_pos + 0.04},
-            size_hint=(0.2, 0.05)
+            color=(
+                [0.3, 1, 0.5, 1]
+                if self.point.potential_index > 70
+                else [1, 0.8, 0.3, 1]
+            ),
+            pos_hint={"x": 0.75, "center_y": y_pos + 0.04},
+            size_hint=(0.2, 0.05),
         )
         layout.add_widget(pot_value)
         bar_bg = Label(
-            text="",
-            pos_hint={'x': 0.08, 'center_y': y_pos},
-            size_hint=(0.84, 0.03)
+            text="", pos_hint={"x": 0.08, "center_y": y_pos}, size_hint=(0.84, 0.03)
         )
         with bar_bg.canvas:
             Color(0.2, 0.25, 0.3, 1)
@@ -356,9 +442,10 @@ class ModernPopup(Popup):
                 Color(1, 0.8, 0.2, 1)
             else:
                 Color(1, 0.4, 0.4, 1)
-            RoundedRectangle(pos=bar_bg.pos, size=(progress_width, bar_bg.size[1]), radius=[5])
+            RoundedRectangle(
+                pos=bar_bg.pos, size=(progress_width, bar_bg.size[1]), radius=[5]
+            )
         layout.add_widget(bar_bg)
-
     def update_bg(self, instance, value):
         self.bg_rect.pos = instance.pos
         self.bg_rect.size = instance.size
@@ -380,174 +467,10 @@ class ModernButton(Button):
         anim = Animation(background_color=self.background_color, duration=0.2)
         anim.start(self)
 
-kv_string = '''
-<BeeMapWidget>:
-    map_scatter: map_scatter
-    canvas_widget: canvas_area
-    canvas.before:
-        Color:
-            rgba: 0.01, 0.02, 0.05, 1
-        Rectangle:
-            pos: self.pos
-            size: self.size
-    # Header centralizado
-    BoxLayout:
-        orientation: 'vertical'
-        size_hint: 1, None
-        height: 100
-        pos_hint: {'center_x': 0.5, 'top': 1}
-        canvas.before:
-            Color:
-                rgba: 0.04, 0.06, 0.1, 0.95
-            RoundedRectangle:
-                pos: self.pos
-                size: self.size
-                radius: [0, 0, 25, 25]
-            Color:
-                rgba: 0.2, 0.6, 1, 0.4
-            Line:
-                points: self.x, self.y, self.x + self.width, self.y
-                width: 3
-        Widget:
-            size_hint_y: 0.2
-        BoxLayout:
-            orientation: 'horizontal'
-            size_hint: 1, 0.6
-            padding: [50, 0]
-            Label:
-                text: "🐝"
-                font_size: 40
-                size_hint_x: 0.1
-            BoxLayout:
-                orientation: 'vertical'
-                size_hint_x: 0.8
-                Label:
-                    text: "BeeMap Pro"
-                    font_size: 32
-                    bold: True
-                    color: 0.2, 0.8, 1, 1
-                    size_hint_y: 0.6
-                Label:
-                    text: "Sistema Inteligente de Mapeamento Apícola"
-                    font_size: 16
-                    color: 0.6, 0.7, 0.8, 1
-                    size_hint_y: 0.4
-        Widget:
-            size_hint_y: 0.2
-    # Área do mapa principal
-    MapScatter:
-        id: map_scatter
-        pos_hint: {'center_x': 0.5, 'center_y': 0.45}
-        size_hint: None, None
-        size: 1200, 800
-        on_transform: root.on_map_transform(self, self.transform)
-        Widget:
-            id: canvas_area
-            size: 1200, 800
-    # Controles de zoom - lado direito
-    BoxLayout:
-        orientation: 'vertical'
-        size_hint: None, None
-        size: 60, 200
-        pos_hint: {'right': 0.98, 'center_y': 0.45}
-        spacing: 10
-        ModernButton:
-            text: "+"
-            font_size: 24
-            bold: True
-            background_normal: ""
-            background_color: 0.1, 0.15, 0.25, 0.9
-            color: 0.2, 0.8, 1, 1
-            on_release: root.zoom_in()
-        ModernButton:
-            text: "−"
-            font_size: 24
-            bold: True
-            background_normal: ""
-            background_color: 0.1, 0.15, 0.25, 0.9
-            color: 0.2, 0.8, 1, 1
-            on_release: root.zoom_out()
-        ModernButton:
-            text: "🎯"
-            font_size: 20
-            background_normal: ""
-            background_color: 0.1, 0.15, 0.25, 0.9
-            color: 0.3, 1, 0.5, 1
-            on_release: root.center_map()
-    # Painel de informações - lado esquerdo
-    BoxLayout:
-        orientation: 'vertical'
-        size_hint: None, None
-        size: 280, 300
-        pos_hint: {'x': 0.02, 'center_y': 0.45}
-        padding: 15
-        spacing: 8
-        canvas.before:
-            Color:
-                rgba: 0.04, 0.06, 0.1, 0.9
-            RoundedRectangle:
-                pos: self.pos
-                size: self.size
-                radius: [20]
-            Color:
-                rgba: 0.2, 0.6, 1, 0.3
-            Line:
-                rounded_rectangle: self.x, self.y, self.width, self.height, 20
-                width: 2
-        Label:
-            text: "📊 INFORMAÇÕES"
-            font_size: 18
-            bold: True
-            color: 0.2, 0.8, 1, 1
-            size_hint_y: 0.2
-        Label:
-            text: f"🔍 Zoom: {root.zoom_level:.1f}x"
-            font_size: 14
-            color: 0.7, 0.8, 0.9, 1
-            size_hint_y: 0.15
-        Label:
-            text: "🟢 Você está aqui"
-            font_size: 14
-            color: 0.3, 1, 0.5, 1
-            size_hint_y: 0.15
-        Label:
-            text: "🟡 Muito próximo (< 8km)"
-            font_size: 12
-            color: 0.92, 0.91, 0.14, 1
-            size_hint_y: 0.125
-        Label:
-            text: "🟩 Próximo (8-15km)"
-            font_size: 12
-            color: 0.29, 0.76, 0.38, 1
-            size_hint_y: 0.125
-        Label:
-            text: "🔷 Médio (15-25km)"
-            font_size: 12
-            color: 0.16, 0.5, 0.87, 1
-            size_hint_y: 0.125
-        Label:
-            text: "🔴 Distante (25-40km)"
-            font_size: 12
-            color: 0.9, 0.37, 0.26, 1
-            size_hint_y: 0.125
-        Label:
-            text: "⚫ Muito distante (> 40km)"
-            font_size: 12
-            color: 0.35, 0.35, 0.41, 1
-            size_hint_y: 0.125
-        Label:
-            text: "💡 Clique nos pontos\\npara mais detalhes"
-            font_size: 11
-            color: 0.6, 0.7, 0.8, 1
-            size_hint_y: 0.2
-            halign: 'center'
-            text_size: self.size
-'''
-
 class BeeMapApp(App):
     def build(self):
-        Builder.load_string(kv_string)
+        Builder.load_file("design.kv")
         return BeeMapWidget()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     BeeMapApp().run()
